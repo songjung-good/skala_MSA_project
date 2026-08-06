@@ -77,7 +77,11 @@
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label" for="category">카테고리</label>
-                <select id="category" v-model="form.category" class="form-select">
+                <select
+                  id="category"
+                  v-model="form.category"
+                  class="form-select"
+                >
                   <option disabled value="">카테고리를 선택하세요</option>
                   <option
                     v-for="option in categoryOptions"
@@ -120,7 +124,11 @@
                 취소
               </router-link>
 
-              <button type="submit" class="btn btn-primary" :disabled="submitting">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                :disabled="submitting"
+              >
                 <span v-if="submitting">등록 중...</span>
                 <span v-else>강의 등록</span>
               </button>
@@ -133,118 +141,114 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import AppHeader from '@/components/AppHeader.vue'
-import { courseApi } from '@/api/course.js'
-import { useAuthStore } from '@/store/auth.js'
+import { reactive, ref } from "vue";
+import { useRouter } from "vue-router";
+import AppHeader from "@/components/AppHeader.vue";
+import { courseApi } from "@/api/course.js";
+import { useAuthStore } from "@/store/auth.js";
 
-const router = useRouter()
-const auth = useAuthStore()
+const router = useRouter();
+const auth = useAuthStore();
 
 const form = reactive({
-  title: '',
-  description: '',
-  category: '',
-  price: null
-})
+  title: "",
+  description: "",
+  category: "",
+  price: null,
+});
 
-const submitting = ref(false)
-const validationError = ref('')
-const submitError = ref('')
-const submitSuccess = ref('')
+const submitting = ref(false);
+const validationError = ref("");
+const submitError = ref("");
+const submitSuccess = ref("");
 
 const categoryOptions = [
-  { label: '백엔드', value: 'BACKEND' },
-  { label: '프론트엔드', value: 'FRONTEND' },
-  { label: 'DevOps', value: 'DEVOPS' },
-  { label: '데이터', value: 'DATA' },
-  { label: 'AI', value: 'AI' }
-]
+  { label: "백엔드", value: "BACKEND" },
+  { label: "프론트엔드", value: "FRONTEND" },
+  { label: "DevOps", value: "DEVOPS" },
+  { label: "AI/데이터", value: "DATA_SCIENCE" },
+];
 
 function handleLogout() {
-  auth.logout()
-  router.push('/')
+  auth.logout();
+  router.push("/");
 }
 
 function validateForm() {
-  validationError.value = ''
+  validationError.value = "";
 
-  if (!auth.user || auth.user.role !== 'INSTRUCTOR') {
-    validationError.value = '강사 계정만 강의를 등록할 수 있습니다.'
-    return false
+  if (!auth.user || auth.user.role !== "INSTRUCTOR") {
+    validationError.value = "강사 계정만 강의를 등록할 수 있습니다.";
+    return false;
   }
 
   if (!form.title) {
-    validationError.value = '강의명을 입력해 주세요.'
-    return false
+    validationError.value = "강의명을 입력해 주세요.";
+    return false;
   }
 
   if (!form.description) {
-    validationError.value = '강의 설명을 입력해 주세요.'
-    return false
+    validationError.value = "강의 설명을 입력해 주세요.";
+    return false;
   }
 
   if (!form.category) {
-    validationError.value = '카테고리를 선택해 주세요.'
-    return false
+    validationError.value = "카테고리를 선택해 주세요.";
+    return false;
   }
 
-  if (form.price === null || form.price === undefined || form.price === '') {
-    validationError.value = '가격을 입력해 주세요.'
-    return false
+  if (form.price === null || form.price === undefined || form.price === "") {
+    validationError.value = "가격을 입력해 주세요.";
+    return false;
   }
 
-  const price = Number(form.price)
+  const price = Number(form.price);
   if (Number.isNaN(price) || price < 0) {
-    validationError.value = '가격은 0 이상의 숫자로 입력해 주세요.'
-    return false
+    validationError.value = "가격은 0 이상의 숫자로 입력해 주세요.";
+    return false;
   }
 
-  return true
+  return true;
 }
 
 async function handleSubmit() {
-  submitError.value = ''
-  submitSuccess.value = ''
+  submitError.value = "";
+  submitSuccess.value = "";
 
-  if (!validateForm()) return
+  if (!validateForm()) return;
 
-  submitting.value = true
+  submitting.value = true;
 
   try {
     const payload = {
       title: form.title,
       description: form.description,
       category: form.category,
-      price: Number(form.price)
-    }
+      price: Number(form.price),
+    };
 
-    const res = await courseApi.create(payload)
-    console.log('[CourseCreate] create response =', res.data)
+    const res = await courseApi.create(payload);
+    console.log("[CourseCreate] create response =", res.data);
 
-    submitSuccess.value = '강의가 성공적으로 등록되었습니다.'
+    submitSuccess.value = "강의가 성공적으로 등록되었습니다.";
 
-    const createdCourseId =
-      res.data?.data?.id ??
-      res.data?.id
+    const createdCourseId = res.data?.data?.id ?? res.data?.id;
 
     if (createdCourseId) {
       setTimeout(() => {
-        router.push(`/courses/${createdCourseId}`)
-      }, 500)
+        router.push(`/courses/${createdCourseId}`);
+      }, 500);
     } else {
       setTimeout(() => {
-        router.push('/courses')
-      }, 500)
+        router.push("/courses");
+      }, 500);
     }
   } catch (error) {
-    console.error('[CourseCreate] create failed:', error)
+    console.error("[CourseCreate] create failed:", error);
     submitError.value =
-      error.response?.data?.message ||
-      '강의 등록에 실패했습니다.'
+      error.response?.data?.message || "강의 등록에 실패했습니다.";
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
 }
 </script>
