@@ -4,11 +4,15 @@
       <!-- 좌측 브랜딩 -->
       <div class="login-left">
         <div class="brand">
-          <img src="@/assets/images/logo/main_logo.png" alt="LearnNexus" class="brand-logo" />
+          <img
+            src="@/assets/images/logo/main_logo.png"
+            alt="LearnNexus"
+            class="brand-logo"
+          />
           <span class="brand-name">LearnNexus</span>
         </div>
         <div class="brand-content">
-          <h2>다시 만나서<br>반갑습니다</h2>
+          <h2>다시 만나서<br />반갑습니다</h2>
           <p>로그인하고 나만의 학습 여정을 이어가세요.</p>
           <ul class="feature-list">
             <li v-for="f in features" :key="f">
@@ -27,10 +31,14 @@
           <div v-if="!showRegister" class="section">
             <h3 class="section-title">로그인</h3>
             <p class="section-desc">LearnNexus 계정으로 로그인합니다.</p>
-            <button class="btn btn-primary btn-full" @click="handleOAuth">로그인</button>
+            <button class="btn btn-primary btn-full" @click="handleOAuth">
+              로그인
+            </button>
             <div class="switch-link">
               계정이 없으신가요?
-              <button class="text-btn" @click="showRegister = true">회원가입</button>
+              <button class="text-btn" @click="showRegister = true">
+                회원가입
+              </button>
             </div>
           </div>
 
@@ -40,15 +48,33 @@
             <form @submit.prevent="handleRegister" class="form">
               <div class="form-group">
                 <label class="form-label">이름</label>
-                <input v-model="registerForm.name" type="text" class="form-input" placeholder="홍길동" required />
+                <input
+                  v-model="registerForm.name"
+                  type="text"
+                  class="form-input"
+                  placeholder="홍길동"
+                  required
+                />
               </div>
               <div class="form-group">
                 <label class="form-label">이메일</label>
-                <input v-model="registerForm.email" type="email" class="form-input" placeholder="user@example.com" required />
+                <input
+                  v-model="registerForm.email"
+                  type="email"
+                  class="form-input"
+                  placeholder="user@example.com"
+                  required
+                />
               </div>
               <div class="form-group">
                 <label class="form-label">비밀번호</label>
-                <input v-model="registerForm.password" type="password" class="form-input" placeholder="8자 이상" required />
+                <input
+                  v-model="registerForm.password"
+                  type="password"
+                  class="form-input"
+                  placeholder="8자 이상"
+                  required
+                />
               </div>
               <div class="form-group">
                 <label class="form-label">역할</label>
@@ -59,17 +85,22 @@
               </div>
               <div v-if="error" class="error-msg">{{ error }}</div>
               <div v-if="success" class="success-msg">{{ success }}</div>
-              <button type="submit" class="btn btn-primary btn-full" :disabled="loading">
+              <button
+                type="submit"
+                class="btn btn-primary btn-full"
+                :disabled="loading"
+              >
                 <span v-if="loading">가입 중...</span>
                 <span v-else>회원가입</span>
               </button>
             </form>
             <div class="switch-link">
               이미 계정이 있으신가요?
-              <button class="text-btn" @click="showRegister = false">로그인</button>
+              <button class="text-btn" @click="showRegister = false">
+                로그인
+              </button>
             </div>
           </div>
-
         </div>
       </div>
     </div>
@@ -77,41 +108,47 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useAuthStore } from '@/store/auth.js'
-import { authApi } from '@/api/auth.js'
+import { ref } from "vue";
+import { useAuthStore } from "@/store/auth.js";
+import { authApi } from "@/api/auth.js";
 
-const auth = useAuthStore()
+const auth = useAuthStore();
 
-const showRegister = ref(false)
-const loading = ref(false)
-const error = ref('')
-const success = ref('')
+const showRegister = ref(false);
+const loading = ref(false);
+const error = ref("");
+const success = ref("");
 
-const registerForm = ref({ name: '', email: '', password: '', role: 'STUDENT' })
+const registerForm = ref({
+  name: "",
+  email: "",
+  password: "",
+  role: "STUDENT",
+});
 
-const features = ['수강 중인 강의 이어보기', '맞춤 강의 추천', '수료증 관리']
+const features = ["수강 중인 강의 이어보기", "맞춤 강의 추천", "수료증 관리"];
 
 function handleOAuth() {
-  auth.redirectToLogin()
+  auth.redirectToLogin();
 }
 
 async function handleRegister() {
-  error.value = ''
-  success.value = ''
-  loading.value = true
+  error.value = "";
+  success.value = "";
+  loading.value = true;
   try {
-    await authApi.register(registerForm.value)
-    success.value = '회원가입 완료! 로그인 페이지로 이동합니다.'
-    registerForm.value = { name: '', email: '', password: '', role: 'STUDENT' }
+    await authApi.register(registerForm.value);
+    success.value = "회원가입 완료! 로그인 페이지로 이동합니다.";
+    registerForm.value = { name: "", email: "", password: "", role: "STUDENT" };
     setTimeout(() => {
-      showRegister.value = false
-      success.value = ''
-    }, 2000)
+      showRegister.value = false;
+      success.value = "";
+    }, 2000);
   } catch (e) {
-    error.value = e.response?.data?.message || '회원가입에 실패했습니다.'
+    error.value = e.response?.data?.message || "회원가입에 실패했습니다.";
+    console.log("회원가입 오류:", e);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 </script>
@@ -129,23 +166,60 @@ async function handleRegister() {
   min-height: 100vh;
 }
 .login-left {
-  background: linear-gradient(160deg, #1a4f8a 0%, #185FA5 50%, #1e7bc4 100%);
+  background: linear-gradient(160deg, #1a4f8a 0%, #185fa5 50%, #1e7bc4 100%);
   padding: 48px;
   display: flex;
   flex-direction: column;
   gap: 48px;
 }
-.brand { display: flex; align-items: center; gap: 10px; }
-.brand-logo { width: 40px; height: 40px; border-radius: 10px; object-fit: contain; }
-.brand-name { font-size: 18px; font-weight: 700; color: #fff; }
-.brand-content h2 {
-  font-size: 32px; font-weight: 700; color: #fff;
-  line-height: 1.35; margin-bottom: 14px;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-.brand-content p { font-size: 15px; color: rgba(255,255,255,0.75); margin-bottom: 28px; }
-.feature-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
-.feature-list li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: rgba(255,255,255,0.85); }
-.dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.6); flex-shrink: 0; }
+.brand-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: contain;
+}
+.brand-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+.brand-content h2 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.35;
+  margin-bottom: 14px;
+}
+.brand-content p {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 28px;
+}
+.feature-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.feature-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+}
 
 .login-right {
   display: flex;
@@ -154,7 +228,10 @@ async function handleRegister() {
   padding: 48px;
   background: var(--color-bg-primary);
 }
-.login-box { width: 100%; max-width: 400px; }
+.login-box {
+  width: 100%;
+  max-width: 400px;
+}
 .back-link {
   display: inline-block;
   font-size: 13px;
@@ -162,15 +239,42 @@ async function handleRegister() {
   margin-bottom: 32px;
   transition: var(--transition);
 }
-.back-link:hover { color: var(--color-primary); }
+.back-link:hover {
+  color: var(--color-primary);
+}
 
-.section { display: flex; flex-direction: column; gap: 16px; }
-.section-title { font-size: 22px; font-weight: 700; color: var(--color-text-primary); margin-bottom: 4px; }
-.section-desc { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+.section-desc {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
 
-.form { display: flex; flex-direction: column; gap: 14px; }
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-label { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); }
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
 .form-input {
   padding: 10px 14px;
   border: 1.5px solid var(--color-border);
@@ -182,8 +286,17 @@ async function handleRegister() {
   transition: var(--transition);
   outline: none;
 }
-.form-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
-.btn-full { width: 100%; padding: 12px; font-size: 15px; justify-content: center; margin-top: 4px; }
+.form-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+.btn-full {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  justify-content: center;
+  margin-top: 4px;
+}
 
 .switch-link {
   text-align: center;

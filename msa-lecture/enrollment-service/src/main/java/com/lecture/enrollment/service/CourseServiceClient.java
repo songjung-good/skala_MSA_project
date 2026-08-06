@@ -8,11 +8,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Map;
 
-/**
- * Enrollment Service -> Course Service 동기 HTTP REST 연동 클라이언트
- * - Spring Cloud Eureka와 연동된 WebClient.Builder(@LoadBalanced) 사용
- * - 강의 존재 검증, 강의 상세 정보 조회, 수강생 수 증가 요청 수행
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -21,11 +16,7 @@ public class CourseServiceClient {
     private final WebClient.Builder webClientBuilder;
 
     /**
-     * Course Service: 강의 존재 여부 확인 (동기 REST 호출)
-     * - http://course-service/api/courses/internal/exists/{id}
-     *
-     * @param courseId 강의 ID
-     * @return 강의 존재 여부 (true/false)
+     * Course Service: 강의 존재 여부 확인 (동기 REST)
      */
     public boolean existsCourse(Long courseId) {
         try {
@@ -34,7 +25,7 @@ public class CourseServiceClient {
                     .uri("http://course-service/api/courses/internal/exists/{id}", courseId)
                     .retrieve()
                     .bodyToMono(Boolean.class)
-                    .block(); // 동기 블로킹 방식으로 결과 수신
+                    .block();
 
             return Boolean.TRUE.equals(exists);
         } catch (Exception e) {
@@ -45,11 +36,9 @@ public class CourseServiceClient {
     }
 
     /**
-     * Course Service: 강의 상세 정보 조회
-     * - 내 수강 목록 조회 시 Course 데이터를 조합(Data Enrichment)하기 위해 사용
-     *
-     * @param courseId 강의 ID
-     * @return 강의 데이터 Map
+     * Course Service: 강의 상세 조회
+     * - 내 수강 목록 응답에 course 정보를 붙일 때 사용
+     * - course-service 쪽에 GET /api/courses/internal/{id} 엔드포인트가 있어야 함
      */
     public Map<String, Object> getCourse(Long courseId) {
         try {
@@ -68,9 +57,21 @@ public class CourseServiceClient {
             log.debug("[CourseServiceClient] 강의 상세 응답 - courseId: {}, body: {}", courseId, responseBody);
 
             /*
-             * 응답 형태 처리:
-             * 1) API Wrapper 형태로 감싸져 오는 경우 ("data": { ... })
-             * 2) 객체 자체가 직접 반환되는 경우
+             * 응답 형태가 다음 둘 중 하나일 수 있으므로 둘 다 처리
+             *
+             * 1) 래퍼 응답
+             * {
+             *   "success": true,
+             *   "message": "성공",
+             *   "data": { ...course fields... }
+             * }
+             *
+             * 2) 바로 강의 객체 반환
+             * {
+             *   "id": 1,
+             *   "title": "...",
+             *   ...
+             * }
              */
             Object data = responseBody.get("data");
             if (data instanceof Map<?, ?> dataMap) {
@@ -88,10 +89,7 @@ public class CourseServiceClient {
     }
 
     /**
-     * Course Service: 수강생 수 증가 요청
-     * - 수강 상태가 PENDING -> ACTIVE 로 변경 완료될 때 호출
-     *
-     * @param courseId 강의 ID
+     * Course Service: 수강생 수 증가 (수강 활성화 시 호출)
      */
     public void increaseEnrollmentCount(Long courseId) {
         try {

@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 class EnrollmentCompletedConsumer:
     """
-    Kafka Consumer: enrollment.completed 이벤트 수신 클래스
-    - Enrollment Service에서 수강 활성화(ACTIVE) 처리 완료 시 발행하는 Kafka 이벤트를 감지
-    - 이벤트 기반으로 추천 시스템 데이터 갱신 및 캐시 무효화 등의 작업을 비동기로 처리
+    Kafka Consumer: enrollment.completed 이벤트 수신
+    - Enrollment Service가 수강 활성화 후 발행
+    - 실시간 추천 캐시 갱신 트리거 (실습 수준: 로그 처리)
     """
 
     def __init__(self):
@@ -20,27 +20,18 @@ class EnrollmentCompletedConsumer:
         self._running = False
 
     def start(self):
-        """
-        메인 스레드를 블로킹하지 않도록 데몬 데몬 스레드(Daemon Thread)에서 Kafka Consumer를 비동기로 시작
-        """
+        """별도 스레드로 Kafka Consumer 시작"""
         self._running = True
         thread = threading.Thread(target=self._consume, daemon=True)
         thread.start()
         logger.info(f"[KafkaConsumer] 시작 - topic: {self.topic}")
 
     def stop(self):
-        """Kafka Consumer 안전 종료"""
         self._running = False
         if self.consumer:
             self.consumer.close()
 
     def _consume(self):
-        """
-        Kafka Consumer 루프 실행
-        - bootstrap_servers: Kafka 브로커 주소 (kafka:9092)
-        - group_id: Recommend Service 전용 컨슈머 그룹
-        - value_deserializer: JSON 역직렬화
-        """
         try:
             self.consumer = KafkaConsumer(
                 self.topic,
@@ -52,7 +43,6 @@ class EnrollmentCompletedConsumer:
                 consumer_timeout_ms=1000,
             )
 
-            # 앱이 실행 중인 동안 메시지 폴링 반복
             while self._running:
                 for message in self.consumer:
                     if not self._running:
@@ -67,9 +57,9 @@ class EnrollmentCompletedConsumer:
 
     def _handle_message(self, event: dict):
         """
-        enrollment.completed 이벤트 메시지 핸들러
-        - 수강 완료 정보(enrollmentId, userId, courseId) 파싱 및 로그 기록
-        - 추천 캐시 무효화 또는 모델 업데이트 수행 포인트
+        enrollment.completed 이벤트 처리
+        - enrollmentId, userId, courseId 추출
+        - 추천 캐시 갱신 트리거 (실습: 로그로 대체)
         """
         try:
             enrollment_id = event.get("enrollmentId")
@@ -81,12 +71,11 @@ class EnrollmentCompletedConsumer:
                 f"enrollmentId: {enrollment_id}, userId: {user_id}, courseId: {course_id}"
             )
 
-            # 추가 확장 포인트: 수강 완료 사용자의 추천 캐시 무효화 처리 가능
+            # 실습 포인트: 여기서 캐시 갱신 또는 추천 재계산 로직 추가 가능
+            # 예: recommend_cache.invalidate(user_id)
 
         except Exception as e:
             logger.error(f"[KafkaConsumer] 메시지 처리 실패: {e}, event: {event}")
 
 
-# 싱글톤 인스턴스 생성
 enrollment_consumer = EnrollmentCompletedConsumer()
-

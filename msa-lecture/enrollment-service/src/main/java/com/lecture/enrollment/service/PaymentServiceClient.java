@@ -9,10 +9,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.math.BigDecimal;
 
-/**
- * Enrollment Service -> Payment Service 동기 HTTP REST 연동 클라이언트
- * - 수강 신청 접수 후 결제 승인 요청을 전달
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -21,19 +17,12 @@ public class PaymentServiceClient {
     private final WebClient.Builder webClientBuilder;
 
     /**
-     * Payment Service로 결제 승인 요청 전달 (동기 REST 호출)
-     * - http://payment-service:8084/api/payments/internal/request
-     *
-     * @param userId   수강생 사용자 ID
-     * @param courseId 신청 강의 ID
-     * @param amount   결제 금액
-     * @return 결제 결과 DTO (paymentId, status)
+     * Payment Service: 결제 요청 (동기 REST)
      */
     public PaymentResult requestPayment(Long userId, Long courseId, BigDecimal amount) {
         try {
             PaymentRequest request = new PaymentRequest(userId, courseId, amount);
 
-            // WebClient로 Payment Service 호출 (동기 블로킹 방식 block() 사용)
             PaymentResult result = webClientBuilder.build()
                     .post()
                     .uri("http://payment-service:8084/api/payments/internal/request")
@@ -53,9 +42,6 @@ public class PaymentServiceClient {
         }
     }
 
-    /**
-     * 내부 요청 DTO 구조체
-     */
     @Getter
     @NoArgsConstructor
     static class PaymentRequest {
@@ -70,9 +56,6 @@ public class PaymentServiceClient {
         }
     }
 
-    /**
-     * 내부 응답 DTO 구조체
-     */
     @Getter
     @NoArgsConstructor
     public static class PaymentResult {
